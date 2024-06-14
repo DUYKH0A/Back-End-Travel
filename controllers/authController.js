@@ -13,8 +13,10 @@ export const register = async (req, res) =>{
         const newUser = new User({
             username: req.body.username,
             email: req.body.email,
+            mobile: req.body.mobile,
             password: hash,
-            photo: req.body.photo
+            photo: req.body.photo,
+            role: req.body.role || 'user',
         })
         await newUser.save();
         res.status(200).json({ success: true, message: "Successfully created"});
@@ -59,13 +61,27 @@ export const login = async (req, res) =>{
         res.cookie("accessToken", token,{
             httpOnly: true,
             expires: token.expiresIn,
-        })
-        .status(200)
-        .json({
-            token,
-            data: {...rest},
-            role,
-        })
+        });
+        if (user.role === 'admin') {
+            res.status(200).json({
+                token,
+                data: {...user._doc},
+                role: user.role,
+            });
+        } else if (user.role === 'tourManager') {
+            res.status(200).json({
+                token,
+                data: {...user._doc},
+                role: user.role,
+            });
+        } else {
+            // Nếu vai trò là user, không cần gửi dữ liệu user và chỉ gửi vai trò
+            res.status(200).json({
+                token,
+                data: {...user._doc},
+                role: user.role,
+            });
+        }
     } catch (error) {
         res.status(500).json({success: false, message:"Failed to login"});
     }

@@ -5,9 +5,12 @@ const bookingSchema = new mongoose.Schema(
     userId: {
       type: String,
     },
-    userEmail: {
+    tourId: {
       type: String,
     },
+    // userEmail: {
+    //   type: String,
+    // },
     tourName: {
         type: String,
         required: true,

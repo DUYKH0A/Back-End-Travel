@@ -1,30 +1,51 @@
 import mongoose from "mongoose";
 
+const activitySchema = new mongoose.Schema({
+  activity: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  }
+});
+
+const itinerarySchema = new mongoose.Schema({
+  day: {
+    type: Number,
+    required: true,
+  },
+  activities: [activitySchema]
+});
+
 const tourSchema = new mongoose.Schema(
   {
-    title: {
+    userId: {
       type: String,
-      required: true,
-      unique: true,
     },
-    city: {
-      type: String,
-      required: true,
-    },
-    address: {
+    tieude: {
       type: String,
       required: true,
     },
-    distance: {
+    transport: {
+      type: String,
+      required: true,
+    },
+    hotel: {
       type: Number,
       required: true,
     },
-    photo: {
+    departureDate: {
+      type: Date,
+        required: true,
+    },
+    Placeofdeparture: {
       type: String,
       required: true,
     },
-    desc: {
-      type: String,
+    photo:{
+      type: [String],
       required: true,
     },
     price: {
@@ -35,18 +56,25 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-
+    numberOfBookings: {
+      type: Number,
+      default: 0,
+    },
     reviews: [
       {
         type: mongoose.Types.ObjectId,
         ref: "Review",
       },
     ],
-
     featured: {
       type: Boolean,
       default: false,
     },
+    desc: {
+      type: String,
+      required: true,
+    },
+    itinerary: [itinerarySchema]
   },
   { timestamps: true }
 );

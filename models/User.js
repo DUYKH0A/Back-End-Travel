@@ -12,17 +12,19 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    mobile: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     password: {
       type: String,
       required: true,
     },
 
-    photo: {
-      type: String,
-    },
-
     role: {
       type: String,
+      enum: ['user', 'tourManager', 'admin'],
       default: "user",
     },
   },

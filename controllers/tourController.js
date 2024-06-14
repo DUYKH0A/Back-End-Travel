@@ -1,23 +1,24 @@
 import Review from '../models/Review.js';
 import Tour from '../models/Tour.js'
+import multer from 'multer';
+import sharp from 'sharp';
 
-
-//create new tour
 export const createTour = async (req,res)=>{
-    const newTour = new Tour(req.body)
+    console.log(req.body.photo)
     try {
+        const newTour = new Tour(req.body);
         const savedTour = await newTour.save(); 
-        res
-            .status(200)
-            .json({
-                success:true, 
-                message:'Successfully created', 
-                data:savedTour,
-            }); 
+        res.status(200).json({
+            success:true, 
+            message:'Successfully created', 
+            data:savedTour,
+        }); 
     } catch (error) {
-        res
-            .status(500).
-            json({success:false, message:'Failed to create. Try again', data:savedTour}); 
+        res.status(500).json({
+            success:false, 
+            message:'Failed to create. Try again', 
+            data:error.message, // Trả về thông báo lỗi nếu có
+        }); 
     }
 };
 
@@ -98,11 +99,10 @@ export const getSingleTour = async (req,res) => {
 
 //getAll tour
 export const getAllTour = async (req,res) => {
-
     //for pagination
     const page = parseInt(req.query.page);
     try {
-        const tours = await Tour.find({}).populate("reviews").skip(page*8).limit(8);
+        const tours = await Tour.find({}).populate("reviews");
         res
             .status(200)
             .json({
@@ -120,33 +120,31 @@ export const getAllTour = async (req,res) => {
             }); 
     }
 };
-
 //get tour by search
-export const getTourBySearch = async(req,res) => {
-    //here 'i' means case sensitive
-    const city = new RegExp(req.query.city, "i");
-    const distance = parseInt(req.query.distance);
-    const maxGroupSize = parseInt(req.query.maxGroupSize);
+export const getTourBySearch = async (req, res) => {
+    const tieude = req.query.tieude ? new RegExp(req.query.tieude) : null;
+    const maxGroupSize = req.query.maxGroupSize ? parseInt(req.query.maxGroupSize) : null;
+
+    let query = {};
+
+    if (tieude) query.tieude = tieude;
+    if (maxGroupSize) query.maxGroupSize = { $gte: maxGroupSize };
 
     try {
-        //gte means greater than equal
-        const tours = await Tour.find({ city, distance: { $gte:distance}, maxGroupSize: { $gte:maxGroupSize}, }).populate("reviews");
-        res
-        .status(200)
-        .json({
-            success:true, 
-            message:'Successfully', 
-            data:tours
-        }); 
+        const tours = await Tour.find(query).populate("reviews");
+        res.status(200).json({
+            success: true,
+            message: 'Successfully',
+            data: tours
+        });
     } catch (error) {
-        res
-            .status(404)
-            .json({
-                success:false, 
-                message:'not found', 
-            }); 
+        res.status(404).json({
+            success: false,
+            message: 'not found',
+        });
     }
 };
+
 
 //get featured tour
 export const getFeaturedTour = async (req,res) => {
@@ -181,3 +179,26 @@ export const getTourCount = async (req, res) => {
         
     }
 }
+export const getValidTours = async (req, res) => {
+    try {
+        const currentTime = new Date();
+
+        // Lọc các tour hợp lệ
+        const tours = await Tour.find({
+            departureDate: { $gte: new Date(currentTime.getTime() + 2 * 24 * 60 * 60 * 1000) },
+            $expr: { $gt: ["$maxGroupSize", "$numberOfBookings"] }
+        }).populate("reviews");
+
+        res.status(200).json({
+            success: true,
+            message: 'Successfully fetched valid tours',
+            data: tours
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch valid tours',
+            error: error.message
+        });
+    }
+};
