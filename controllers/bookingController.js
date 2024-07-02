@@ -65,16 +65,17 @@ export const getBookingsByUser = async (req, res) => {
 
 export const createPaymentLink = async (req, res) => {
     try {
-        
+        console.log("sdt",req.body.phone)
+        const tour = await Tour.findById(req.body.tourId);
         const encodedData = encodeURIComponent(JSON.stringify(req.body));
         const body = {
             orderCode: Date.now(),
-            amount: 10000,
+            amount: tour.price*req.body.guestSize,
             description: "Thanh toan don hang",
             buyerName: req.body.fullName,
             buyerPhone: req.body.phone,
-            cancelUrl: `${process.env.URL_REACT}/thanh-you?data=${encodedData}`,
-            returnUrl: `${process.env.URL_REACT}/cancel`,
+            returnUrl: `${process.env.URL_REACT}/thanh-you?data=${encodedData}`,
+            cancelUrl: `${process.env.URL_REACT}/cancel`,
         };
         const paymentLink = await payOS.createPaymentLink(body);
         return res.status(200).json({ success: true, paymentLink});

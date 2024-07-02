@@ -38,7 +38,7 @@ const tourSchema = new mongoose.Schema(
     },
     departureDate: {
       type: Date,
-        required: true,
+      required: true,
     },
     Placeofdeparture: {
       type: String,
@@ -74,7 +74,12 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    itinerary: [itinerarySchema]
+    itinerary: [itinerarySchema],
+    deleted: {
+      type: Boolean,
+      index: true,
+      default: false
+    }
   },
   { timestamps: true }
 );

@@ -14,6 +14,7 @@ export const createTour = async (req,res)=>{
             data:savedTour,
         }); 
     } catch (error) {
+        console.error('Error creating tour:', error); // In ra lỗi cụ thể
         res.status(500).json({
             success:false, 
             message:'Failed to create. Try again', 
@@ -52,25 +53,37 @@ export const updateTour = async (req,res) => {
 
 //delete tour
 export const deleteTour = async (req,res) => {
-    const id = req.params.id
+    console.log("aaa",Tour)
+    console.log("bbb",req.params.id)
 
     try {
-        await Tour.findByIdAndDelete(id); 
-        res
-            .status(200)
-            .json({
-                success:true, 
-                message:'Successfully deleted', 
-            }); 
 
-    } catch (error) {
+        const tour = await Tour.findOne({
+                _id: req.params.id,
+                    deleted: false
+              });
+        console.log("tour", tour)
+        if (!tour || tour.deleted === true) {
+          return res.status(404).json({
+            error: 'Requested category does not exist'
+          });
+        }
+    
+        tour.deleted = true;
+        await tour.save();
+    
+        res.status(200).json({
+          message: "Category deleted"
+        });
+      }
+      catch (error) {
         res
             .status(500)
             .json({
                 success:false, 
                 message:'Failed to delete', 
             }); 
-    }
+      }
 };
 
 //getSingle tour
@@ -100,9 +113,9 @@ export const getSingleTour = async (req,res) => {
 //getAll tour
 export const getAllTour = async (req,res) => {
     //for pagination
-    const page = parseInt(req.query.page);
+    //const page = parseInt(req.query.page);
     try {
-        const tours = await Tour.find({}).populate("reviews");
+        const tours = await Tour.find({deleted: false}).populate("reviews");
         res
             .status(200)
             .json({
